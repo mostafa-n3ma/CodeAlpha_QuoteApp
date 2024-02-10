@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">CodeAlpha_QuoteApp</string>
+    <string name="lurem_test">Lorem ipsum dolor sit amet consectetur.\n Nunc enim cras erat eu convallis in velit rutrum. Quis sit nam mattis praesent metus quam rutrum accumsan.</string>
+    <string name="demo_quote_50">Life is what happens when you\'re busy making other plans.</string>
+    <string name="demo_quote_75">In the end, it\'s not the years in your life that count. It\'s the life in your years.</string>
+    <string name="demo_quote_100">The only way to do great work is to love what you do. If you haven\'t found it yet, keep looking. Don\'t settle.</string>
+    <string name="demo_quote_150">Success is not final, failure is not fatal: It is the courage to continue that counts.</string>
 </resources>
