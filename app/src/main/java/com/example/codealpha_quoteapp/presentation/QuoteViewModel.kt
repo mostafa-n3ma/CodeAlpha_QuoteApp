@@ -1,8 +1,8 @@
 package com.example.codealpha_quoteapp.presentation
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codealpha_quoteapp.operations.Repository
 import com.example.codealpha_quoteapp.operations.dataEntities.CacheQuoteItem
 import com.example.codealpha_quoteapp.operations.dataEntities.EntitiesMapper
@@ -31,10 +31,16 @@ constructor(
     val historyQuotesList = repository.getAllHistoryQuotes()
     val favoritesQuotesList = repository.getAllFavoritesQuotes()
 
-    fun setEvent(events: ViewModelEvents) {
-        when (events) {
-            ViewModelEvents.UpdateCurrenRandomQuote -> {
+    fun setEvent(event: ViewModelEvents) {
+        when (event) {
+            ViewModelEvents.UpdateCurrentRandomQuote -> {
                 updateCurrentRandomQuote()
+            }
+
+            is ViewModelEvents.MakeQuoteFavorite -> {
+                if (event.quote !=null){
+                    makeQuoteFavorite(event.quote)
+                }
             }
         }
     }
@@ -48,10 +54,21 @@ constructor(
             repository.insertQuote(cacheItem)
         }
     }
-
+    fun makeQuoteFavorite(quote: CacheQuoteItem) {
+        viewModelScope.launch {
+            quote.favorite = true
+            repository.updateQuote(quote)
+        }
+    }
 }
+
+
+
 
 
 sealed class ViewModelEvents {
-    object UpdateCurrenRandomQuote : ViewModelEvents()
+    data object UpdateCurrentRandomQuote : ViewModelEvents()
+    data class MakeQuoteFavorite(val quote:CacheQuoteItem?=null):ViewModelEvents()
+
 }
+
