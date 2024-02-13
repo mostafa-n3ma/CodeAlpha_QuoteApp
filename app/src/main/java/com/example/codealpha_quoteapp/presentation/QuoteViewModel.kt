@@ -27,9 +27,6 @@ constructor(
         const val TAG = "QuoteViewModel"
     }
 
-    private val _currentRandomQuote = MutableStateFlow<CacheQuoteItem?>(null)
-    val currentRandomQuote: StateFlow<CacheQuoteItem?> = _currentRandomQuote
-
 
     val historyQuotesList = repository.getAllHistoryQuotes()
     val favoritesQuotesList = repository.getAllFavoritesQuotes()
@@ -63,9 +60,7 @@ constructor(
         viewModelScope.launch {
             val networkResponse: NetWorkQuoteItem = repository.getRandomQuote()[0]
             val cacheItem: CacheQuoteItem = mapper.mapNetWorkToCache(networkResponse)
-            _currentRandomQuote.update { cacheItem }
             repository.insertQuote(cacheItem)
-//            historyQuotesList.value?.last()
         }
     }
     private fun changeQuoteFavoriteStatus(quote: CacheQuoteItem?) {

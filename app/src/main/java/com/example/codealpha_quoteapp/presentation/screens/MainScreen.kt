@@ -37,11 +37,26 @@ import com.example.codealpha_quoteapp.R
 import com.example.codealpha_quoteapp.operations.dataEntities.CacheQuoteItem
 import com.example.codealpha_quoteapp.presentation.QuoteViewModel
 import com.example.codealpha_quoteapp.presentation.ViewModelEvents
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 
 @Composable
 fun MainScreen(vieWModel: QuoteViewModel? = null) {
-//    val currentRandomQuote: State<CacheQuoteItem?> = vieWModel!!.currentRandomQuote.collectAsState()
-    val currentRandomQuote = vieWModel!!.historyQuotesList.observeAsState().value?.last()
+
+    val historyList = vieWModel!!.historyQuotesList.observeAsState()
+    val currentRandomQuote = MutableStateFlow<CacheQuoteItem?>(null)
+
+    when(historyList.value?.isNotEmpty()){
+        true -> {
+            currentRandomQuote.update {
+                historyList.value?.last()
+            }
+        }
+        else -> {
+
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -69,12 +84,12 @@ fun MainScreen(vieWModel: QuoteViewModel? = null) {
 
         QuoteCard(
             vieWModel = vieWModel,
-            content = currentRandomQuote?.content ?: "",
-            author = currentRandomQuote?.author ?: "",
-            length = currentRandomQuote?.length ?: 0,
-            isFavorite = currentRandomQuote?.favorite ?: false,
+            content = currentRandomQuote.value?.content ?: "",
+            author = currentRandomQuote.value?.author ?: "",
+            length = currentRandomQuote.value?.length ?: 0,
+            isFavorite = currentRandomQuote.value?.favorite ?: false,
             onFavClicked = {
-                vieWModel.setEvent(ViewModelEvents.ChangeQuoteFavoriteStatusEvent(currentRandomQuote))
+                vieWModel.setEvent(ViewModelEvents.ChangeQuoteFavoriteStatusEvent(currentRandomQuote.value))
             },
             modifier = Modifier
                 .padding(top = 100.dp)

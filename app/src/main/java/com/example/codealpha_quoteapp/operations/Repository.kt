@@ -26,11 +26,19 @@ constructor(
         quoteDao.deleteQuote(quote)
     }
 
+
+    suspend fun clearQuotesTable(){
+        quoteDao.clearQuotesTable()
+    }
+
+
+
     fun getAllHistoryQuotes():LiveData<List<CacheQuoteItem>> = quoteDao.getAllQuotes()
 
     fun getAllFavoritesQuotes():LiveData<List<CacheQuoteItem>> = quoteDao.getAllQuotes().map { quoteItemList ->
         quoteItemList.filter {quoteItem-> quoteItem.favorite }
     }
+
 
 
     suspend fun getRandomQuote():List<NetWorkQuoteItem>{

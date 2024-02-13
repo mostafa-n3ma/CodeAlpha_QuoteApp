@@ -39,5 +39,8 @@ interface QuoteDao {
     @Delete
     suspend fun deleteQuote(quoteItem: CacheQuoteItem)
 
+    @Query("DELETE  FROM quotes")
+    suspend fun clearQuotesTable()
+
 
 }
