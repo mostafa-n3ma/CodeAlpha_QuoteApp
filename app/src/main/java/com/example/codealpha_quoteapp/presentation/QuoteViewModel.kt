@@ -1,8 +1,10 @@
 package com.example.codealpha_quoteapp.presentation
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codealpha_quoteapp.operations.Repository
 import com.example.codealpha_quoteapp.operations.dataEntities.CacheQuoteItem
 import com.example.codealpha_quoteapp.operations.dataEntities.EntitiesMapper
@@ -28,19 +30,30 @@ constructor(
     private val _currentRandomQuote = MutableStateFlow<CacheQuoteItem?>(null)
     val currentRandomQuote: StateFlow<CacheQuoteItem?> = _currentRandomQuote
 
+
     val historyQuotesList = repository.getAllHistoryQuotes()
     val favoritesQuotesList = repository.getAllFavoritesQuotes()
 
+
+    private val _shareQuote = MutableLiveData<String>("")
+    val shareQuote :LiveData<String> get() = _shareQuote
+
     fun setEvent(event: ViewModelEvents) {
         when (event) {
-            ViewModelEvents.UpdateCurrentRandomQuote -> {
+            ViewModelEvents.UpdateCurrentRandomQuoteEvent -> {
                 updateCurrentRandomQuote()
             }
 
-            is ViewModelEvents.MakeQuoteFavorite -> {
+            is ViewModelEvents.ChangeQuoteFavoriteStatusEvent -> {
                 if (event.quote !=null){
-                    makeQuoteFavorite(event.quote)
+                    changeQuoteFavoriteStatus(event.quote)
+
                 }
+            }
+
+            is ViewModelEvents.ShareQuoteContentEvent -> {
+                _shareQuote.value = event.quote
+                _shareQuote.value = ""
             }
         }
     }
@@ -52,12 +65,15 @@ constructor(
             val cacheItem: CacheQuoteItem = mapper.mapNetWorkToCache(networkResponse)
             _currentRandomQuote.update { cacheItem }
             repository.insertQuote(cacheItem)
+//            historyQuotesList.value?.last()
         }
     }
-    fun makeQuoteFavorite(quote: CacheQuoteItem) {
+    private fun changeQuoteFavoriteStatus(quote: CacheQuoteItem?) {
         viewModelScope.launch {
-            quote.favorite = true
-            repository.updateQuote(quote)
+            if (quote !=null){
+                quote.favorite = !quote.favorite
+                repository.updateQuote(quote)
+            }
         }
     }
 }
@@ -67,8 +83,10 @@ constructor(
 
 
 sealed class ViewModelEvents {
-    data object UpdateCurrentRandomQuote : ViewModelEvents()
-    data class MakeQuoteFavorite(val quote:CacheQuoteItem?=null):ViewModelEvents()
+    data object UpdateCurrentRandomQuoteEvent : ViewModelEvents()
+    data class ChangeQuoteFavoriteStatusEvent(val quote:CacheQuoteItem?=null):ViewModelEvents()
+
+    data class ShareQuoteContentEvent(val quote:String) :ViewModelEvents()
 
 }
 

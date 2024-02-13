@@ -1,6 +1,8 @@
 package com.example.codealpha_quoteapp
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -10,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.Observer
 import com.example.codealpha_quoteapp.presentation.QuoteViewModel
 import com.example.codealpha_quoteapp.presentation.navigtion.NavigationBarComposable
 import com.example.codealpha_quoteapp.ui.theme.CodeAlpha_QuoteAppTheme
@@ -32,13 +35,36 @@ class MainActivity : ComponentActivity() {
                 ) {
 //                   AppNavigator(viewModel = viewModel)
                     NavigationBarComposable(vieWModel = viewModel)
+
+                    viewModel.shareQuote.observe(this, Observer {
+                        Log.d("MainActivity", "onCreate:  quoteTxt : $it")
+                        if (it.isNotEmpty()){
+                            Log.d("MainActivity", "onCreate: quoteTxt is notEmpty share ->->>>> : $it")
+                            shareQuote(it)
+                        }
+                    })
+
+
                 }
             }
         }
     }
 
 
+    fun shareQuote(quote:String){
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, quote)
+            type = "text/plain"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        startActivity(shareIntent)
+    }
+
+
 }
+
 
 
 

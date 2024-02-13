@@ -1,5 +1,6 @@
 package com.example.codealpha_quoteapp.presentation.screens
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -18,12 +19,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -37,7 +40,8 @@ import com.example.codealpha_quoteapp.presentation.ViewModelEvents
 
 @Composable
 fun MainScreen(vieWModel: QuoteViewModel? = null) {
-    val currentRandomQuote: State<CacheQuoteItem?> = vieWModel!!.currentRandomQuote.collectAsState()
+//    val currentRandomQuote: State<CacheQuoteItem?> = vieWModel!!.currentRandomQuote.collectAsState()
+    val currentRandomQuote = vieWModel!!.historyQuotesList.observeAsState().value?.last()
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -64,10 +68,14 @@ fun MainScreen(vieWModel: QuoteViewModel? = null) {
         }
 
         QuoteCard(
-            content = currentRandomQuote.value?.content?:"",
-            author = currentRandomQuote.value?.author?:"",
-            length = currentRandomQuote.value?.length?:0,
-            isFavorite = currentRandomQuote.value?.favorite?:false,
+            vieWModel = vieWModel,
+            content = currentRandomQuote?.content ?: "",
+            author = currentRandomQuote?.author ?: "",
+            length = currentRandomQuote?.length ?: 0,
+            isFavorite = currentRandomQuote?.favorite ?: false,
+            onFavClicked = {
+                vieWModel.setEvent(ViewModelEvents.ChangeQuoteFavoriteStatusEvent(currentRandomQuote))
+            },
             modifier = Modifier
                 .padding(top = 100.dp)
                 .width(300.dp)
@@ -79,8 +87,10 @@ fun MainScreen(vieWModel: QuoteViewModel? = null) {
         )
 
         OutlinedButton(
-            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 100.dp),
-            onClick = { vieWModel.setEvent(ViewModelEvents.UpdateCurrentRandomQuote) },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 100.dp),
+            onClick = { vieWModel.setEvent(ViewModelEvents.UpdateCurrentRandomQuoteEvent) },
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color.White,
                 contentColor = Color.Black
@@ -88,7 +98,7 @@ fun MainScreen(vieWModel: QuoteViewModel? = null) {
             shape = RoundedCornerShape(10),
             contentPadding = PaddingValues(8.dp)
         ) {
-            Icon(painter = painterResource(id = R.drawable.generate), contentDescription ="" )
+            Icon(painter = painterResource(id = R.drawable.generate), contentDescription = "")
             Text(
                 modifier = Modifier.padding(start = 8.dp),
                 text = "Random Quote"
@@ -100,21 +110,30 @@ fun MainScreen(vieWModel: QuoteViewModel? = null) {
 
 }
 
+
+
 @Composable
 fun QuoteCard(
+    vieWModel: QuoteViewModel,
     content: String,
     author: String,
     length: Int,
     isFavorite: Boolean,
-    modifier: Modifier
+    modifier: Modifier,
+    onFavClicked: () -> Unit
 ) {
+    val favState = rememberSaveable {
+        mutableStateOf(isFavorite)
+    }
+
     Box(modifier = modifier) {
         Icon(
             modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.TopStart),
             painter = painterResource(id = R.drawable.quote),
-            contentDescription = "")
+            contentDescription = ""
+        )
         quoteContentText(
             content = content,
             length = length,
@@ -124,10 +143,12 @@ fun QuoteCard(
         )
 
 
-        AuthorText(author,
+        AuthorText(
+            author,
             Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 8.dp, bottom = 35.dp))
+                .padding(start = 8.dp, bottom = 35.dp)
+        )
 
         Row(
             modifier = Modifier
@@ -135,19 +156,28 @@ fun QuoteCard(
 
         ) {
             IconButton(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    favState.value = !favState.value
+                    onFavClicked()
+                          },
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.favourite_outlined),
+                    painter = if(favState.value) painterResource(id = R.drawable.favourite_filled) else painterResource(
+                        id = R.drawable.favourite_outlined
+                    ),
                     contentDescription = ""
                 )
             }
 
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = {
+
+                vieWModel.setEvent(ViewModelEvents.ShareQuoteContentEvent(
+                    "$content \n $author"
+                ))
+            }) {
                 Icon(painter = painterResource(id = R.drawable.share), contentDescription = "")
             }
         }
-
 
 
     }
@@ -171,7 +201,7 @@ fun quoteContentText(content: String, length: Int, modifier: Modifier) {
         modifier = modifier,
         text = content,
         style = TextStyle(
-            fontSize = if (length < 100) 24.sp else if(length>150) 14.sp else 18.sp,
+            fontSize = if (length < 100) 24.sp else if (length > 150) 14.sp else 18.sp,
             fontFamily = FontFamily(Font(R.font.atma_bold))
         )
     )

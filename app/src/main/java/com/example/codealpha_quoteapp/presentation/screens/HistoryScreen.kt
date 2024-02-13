@@ -18,22 +18,20 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.codealpha_quoteapp.operations.dataEntities.CacheQuoteItem
 import com.example.codealpha_quoteapp.presentation.QuoteViewModel
+import com.example.codealpha_quoteapp.presentation.ViewModelEvents
 
 
 @Composable
 fun HistoryScreen(vieWModel: QuoteViewModel? = null) {
     val historyList: State<List<CacheQuoteItem>?> = vieWModel!!.historyQuotesList.observeAsState()
-    LazyQuoteColumn(historyList)
-
-
+    LazyQuoteColumn(historyList,vieWModel)
 }
 
 @Composable
-fun LazyQuoteColumn(listState: State<List<CacheQuoteItem>?>) {
+fun LazyQuoteColumn(listState: State<List<CacheQuoteItem>?>, vieWModel: QuoteViewModel) {
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -44,10 +42,14 @@ fun LazyQuoteColumn(listState: State<List<CacheQuoteItem>?>) {
         ) {
             items(listState.value?.asReversed()?: emptyList()) {
                 QuoteCard(
+                    vieWModel = vieWModel,
                     content = it.content ?: "",
                     author = it.author ?: "",
                     length = it.length ?: 0,
                     isFavorite = it.favorite,
+                    onFavClicked = {
+                        vieWModel.setEvent(ViewModelEvents.ChangeQuoteFavoriteStatusEvent(it))
+                    },
                     modifier = Modifier
                         .width(400.dp)
                         .height(400.dp)
@@ -63,8 +65,4 @@ fun LazyQuoteColumn(listState: State<List<CacheQuoteItem>?>) {
 }
 
 
-@Preview
-@Composable
-fun HistoryScreenPreview() {
-    HistoryScreen()
-}
+

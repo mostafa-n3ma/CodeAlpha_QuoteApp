@@ -1,5 +1,10 @@
 package com.example.codealpha_quoteapp.presentation.navigtion
 
+import android.util.Log
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -17,6 +22,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -67,9 +73,16 @@ import com.example.codealpha_quoteapp.presentation.screens.MainScreen
                         selected = selectedItemIndex == index,
                         onClick = {
                             selectedItemIndex = index
+                            val currentRout = navController.currentDestination?.route
                             when(item.title){
                                 "Favorite" -> navController.navigate(AppDestinations.FavoritesScreen.rout)
-                                "Random Quote" -> navController.navigate(AppDestinations.MainScreen.rout)
+                                "Random Quote" -> {
+                                    if (currentRout == AppDestinations.MainScreen.rout){
+
+                                    }else{
+                                        navController.popBackStack()
+                                    }
+                                }
                                 "History" -> navController.navigate(AppDestinations.HistoryScreen.rout)
                             }
                         },
@@ -108,13 +121,26 @@ import com.example.codealpha_quoteapp.presentation.screens.MainScreen
 @Composable
 private fun ScreensNavHost(navController: NavHostController, vieWModel: QuoteViewModel) {
     NavHost(navController = navController, startDestination = AppDestinations.MainScreen.rout) {
-        composable(AppDestinations.MainScreen.rout) {
+        composable(
+            AppDestinations.MainScreen.rout,
+            popEnterTransition = { fadeIn() },
+            exitTransition = { fadeOut() }
+        ) {
             MainScreen(vieWModel)
         }
-        composable(AppDestinations.FavoritesScreen.rout) {
+        composable(
+
+            AppDestinations.FavoritesScreen.rout,
+            enterTransition = { slideInHorizontally { -it } },
+            popExitTransition = { slideOutHorizontally { -it } }
+        ) {
             FavoritesScreen(vieWModel)
         }
-        composable(AppDestinations.HistoryScreen.rout) {
+        composable(
+            AppDestinations.HistoryScreen.rout,
+            enterTransition = { slideInHorizontally { it} },
+            popExitTransition = { slideOutHorizontally { it } }
+        ) {
             HistoryScreen(vieWModel)
         }
     }

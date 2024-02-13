@@ -8,7 +8,7 @@ import com.example.codealpha_quoteapp.presentation.QuoteViewModel
 @Composable
 fun FavoritesScreen(vieWModel: QuoteViewModel?=null) {
     val favoritesList = vieWModel!!.favoritesQuotesList.observeAsState()
-    LazyQuoteColumn(listState = favoritesList)
+    LazyQuoteColumn(listState = favoritesList, vieWModel = vieWModel)
 }
 
 
